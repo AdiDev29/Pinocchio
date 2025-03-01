@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinocchio - The Wooden Truth Detective</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        body {
+            background-color: #f9f4e8;
+            color: #5b4b33;
+            line-height: 1.6;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #eadfc5 0%, #f9f4e8 100%);
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+CiAgPGcgb3BhY2l0eT0iMC4wNSIgZmlsbD0iIzg1NGExMSI+CiAgICA8cGF0aCBkPSJNMCAwbDI1IDI1TDAgMTAwbDEwMC01MEw1MCAyNWwyNSAwTDEwMCAwIiBzdHJva2U9IiM4NTRhMTEiIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMC41Ii8+CiAgPC9nPgo8L3N2Zz4=');
+            opacity: 0.2;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #854a11;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(91, 75, 51, 0.1);
+        }
+        
+        .subtitle {
+            font-size: 20px;
+            color: #7d6843;
+            margin-bottom: 40px;
+        }
+        
+        .pinocchio-illustration {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            margin: 40px auto;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .pinocchio-face {
+            height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #854a11;
+            color: white;
+            font-weight: 600;
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            margin: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            background-color: #a96c24;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: #854a11;
+            border: 2px solid #854a11;
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(133, 74, 17, 0.1);
+        }
+        
+        .features {
+            padding: 80px 0;
+            background-color: white;
+        }
+        
+        .features h2 {
+            font-family: 'Playfair Display', serif;
+            color: #854a11;
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 36px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background-color: #faf6eb;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(91, 75, 51, 0.05);
+            border: 1px solid #e6d7b8;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(91, 75, 51, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-family: 'Playfair Display', serif;
+            color: #714012;
+            margin-bottom: 15px;
+        }
+        
+        .how-it-works {
+            padding: 80px 0;
+            background-color: #f9f4e8;
+        }
+        
+        .how-it-works h2 {
+            font-family: 'Playfair Display', serif;
+            color: #854a11;
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 36px;
+        }
+        
+        .steps {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            background-color: #854a11;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .step-content h3 {
+            font-family: 'Playfair Display', serif;
+            color: #714012;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            background-color: #eadfc5;
+            padding: 40px 0;
+            text-align: center;
+            color: #7d6843;
+        }
+        
+        footer .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            color: #854a11;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .nav-links {
+            margin: 30px 0;
+        }
+        
+        .nav-links a {
+            color: #714012;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: #a96c24;
+        }
+        
+        .copyright {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 20px;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .subtitle {
+                font-size: 18px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .step {
+                flex-direction: column;
+            }
+            
+            .step-number {
+                margin-bottom: 15px;
+            }
+        }
+        
+        .installation {
+            padding: 80px 0;
+            background-color: #faf6eb;
+        }
+        
+        .installation h2 {
+            font-family: 'Playfair Display', serif;
+            color: #854a11;
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 36px;
+        }
+        
+        .installation-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .installation-steps {
+            width: 100%;
+        }
+        
+        .installation-steps ol {
+            padding-left: 30px;
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        
+        .installation-steps li {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .installation-steps li strong {
+            color: #714012;
+        }
+        
+        .installation-cta {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .installation-note {
+            margin-top: 15px;
+            font-size: 14px;
+            font-style: italic;
+            color: #7d6843;
+        }
+        
+        .domain-link {
+            color: #854a11;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .domain-link:hover {
+            text-decoration: underline;
+        }
+        
+        .btn-install {
+            background-color: #4285F4;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .btn-install:hover {
+            background-color: #2b6cd4;
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="container">
+            <h1>Pinocchio</h1>
+            <p class="subtitle">The Wooden Truth Detective</p>
+            
+            <div class="pinocchio-illustration">
+                <img src="/static/images/pinocchiofilm.jpg" alt="Pinocchio" class="pinocchio-face">
+            </div>
+            
+            <p class="subtitle">A powerful tool for detecting misinformation online</p>
+            
+            <div class="cta-buttons">
+                <a href="/reports" class="btn">View Report Dashboard</a>
+                <a href="https://github.com/yourusername/pinocchio" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2>Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Content Analysis</h3>
+                    <p>Advanced AI-powered analysis detects potential misinformation by comparing content with trusted sources.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Misinformation Scoring</h3>
+                    <p>Get a clear reliability score from 0-10 that helps you quickly assess the trustworthiness of content.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Detailed Reports</h3>
+                    <p>Access comprehensive reports with analysis, context, and verified sources for better understanding.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="installation">
+        <div class="container">
+            <h2>Get Started</h2>
+            <div class="installation-wrapper">
+                <div class="installation-steps">
+                    <ol>
+                        <li><strong>Install the Extension</strong> - Click the button below to go to the Chrome Web Store and add Pinocchio to your browser.</li>
+                        <li><strong>Visit Any Website</strong> - Browse to any page you want to fact-check.</li>
+                        <li><strong>Click the Pinocchio Icon</strong> - Find the Pinocchio icon in your browser toolbar and click it.</li>
+                        <li><strong>View the Analysis</strong> - Get instant results on the page's reliability score.</li>
+                        <li><strong>Access All Reports</strong> - Visit this site anytime to view all your past analyses and track patterns of misinformation, even after closing your browser.</li>
+                    </ol>
+                    
+                    <div class="installation-cta">
+                        <a href="https://chrome.google.com/webstore/detail/pinocchio/placeholder-extension-id" class="btn btn-install" target="_blank">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 10px;">
+                                <path d="M12 3L4 9V21H20V9L12 3Z" fill="currentColor"/>
+                            </svg>
+                            Install Chrome Extension
+                        </a>
+                        <p class="installation-note">Your fact-checks are automatically saved at <a href="https://example.com" class="domain-link">example.com</a> (our dashboard site)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Install the Extension</h3>
+                        <p>Add the Pinocchio browser extension to Chrome for seamless fact-checking while browsing.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Browse and Analyze</h3>
+                        <p>When visiting a webpage, click the Pinocchio icon to analyze the content for potential misinformation.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Review Results</h3>
+                        <p>Get instant feedback with a reliability score, detailed report, and verified sources.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Access Dashboard</h3>
+                        <p>Visit the dashboard to view all previously analyzed reports and track misinformation patterns.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/reports" class="btn">View Reports Dashboard</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Pinocchio</div>
+            <p>Helping you navigate truth in the digital age</p>
+            
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/reports">Reports Dashboard</a>
+                <a href="https://github.com/yourusername/pinocchio">GitHub</a>
+            </div>
+            
+            <div class="developers">
+                <p>Developed by: Adrian Maier, Dimeji Aiyesan, Ashton Grant</p>
+            </div>
+            
+            <p class="copyright">✨ Pinocchio - The Wooden Truth Detective ✨<br>&copy; 2023 Adrian Maier</p>
+        </div>
+    </footer>
+</body>
+</html>

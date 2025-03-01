@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinocchio - Report Database</title>
+    <style>
+        /* Pinocchio-inspired styling to match the extension theme */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f4e8;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f7f0e1 0%, #eadfc5 100%);
+            color: #5b4b33;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(91, 75, 51, 0.1);
+            border: 1px solid #e6d7b8;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            position: relative;
+        }
+        
+        header:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #c4a77d, transparent);
+        }
+        
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #854a11;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(91, 75, 51, 0.1);
+        }
+        
+        .subtitle {
+            color: #7d6843;
+            font-size: 18px;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .search-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            padding: 10px 15px;
+            border: 1px solid #d5c6a9;
+            border-radius: 20px;
+            background-color: #faf6eb;
+            width: 300px;
+            font-size: 14px;
+            color: #5b4b33;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(133, 74, 17, 0.3);
+            border-color: #c4a77d;
+        }
+        
+        .filter-container {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            color: #714012;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d5c6a9;
+            border-radius: 20px;
+            background-color: #faf6eb;
+            font-size: 14px;
+            color: #5b4b33;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #c4a77d;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(91, 75, 51, 0.05);
+        }
+        
+        thead {
+            background-color: #854a11;
+            color: white;
+        }
+        
+        th {
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        
+        th:first-child {
+            padding-left: 20px;
+        }
+        
+        tbody tr {
+            background-color: #faf6eb;
+            transition: all 0.3s ease;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f0e8d6;
+        }
+        
+        tbody tr:hover {
+            background-color: #e6d7b8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(91, 75, 51, 0.05);
+        }
+        
+        td {
+            padding: 14px 12px;
+            border-top: 1px solid rgba(213, 198, 169, 0.3);
+            font-size: 14px;
+        }
+        
+        td:first-child {
+            padding-left: 20px;
+        }
+        
+        .timestamp {
+            color: #7d6843;
+            font-style: italic;
+            white-space: nowrap;
+        }
+        
+        .url-cell {
+            max-width: 250px;
+        }
+        
+        .url {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #854a11;
+            text-decoration: none;
+        }
+        
+        .url:hover {
+            text-decoration: underline;
+        }
+        
+        .title-cell {
+            max-width: 300px;
+        }
+        
+        .title {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .score {
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .score-low {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+        }
+        
+        .score-medium {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #FFC107;
+            border: 1px solid #FFC107;
+        }
+        
+        .score-high {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #F44336;
+            border: 1px solid #F44336;
+        }
+        
+        .actions {
+            white-space: nowrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-view {
+            background-color: #854a11;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-view:hover {
+            background-color: #a96c24;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #d5c6a9;
+            border-radius: 20px;
+            background-color: #faf6eb;
+            font-size: 14px;
+            color: #5b4b33;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .page-btn.active {
+            background-color: #854a11;
+            color: white;
+            border-color: #854a11;
+        }
+        
+        .page-btn:hover:not(.active) {
+            background-color: #e6d7b8;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #7d6843;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            color: #7d6843;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        footer:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #d5c6a9, transparent);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(196, 167, 125, 0.3);
+            border-top: 4px solid #854a11;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dashboard-overview {
+            margin-bottom: 30px;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, #ffffff, #f0e8d6);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(91, 75, 51, 0.05);
+            border: 1px solid #e6d7b8;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(91, 75, 51, 0.1);
+        }
+        
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #854a11;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #7d6843;
+        }
+        
+        .charts-section {
+            margin-bottom: 40px;
+        }
+        
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container {
+            background-color: #faf6eb;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(91, 75, 51, 0.05);
+            border: 1px solid #e6d7b8;
+        }
+        
+        .chart-container h3 {
+            font-family: 'Playfair Display', serif;
+            color: #714012;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .advanced-filters {
+            background-color: #faf6eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(91, 75, 51, 0.05);
+            border: 1px solid #e6d7b8;
+        }
+        
+        .advanced-filters h3 {
+            font-family: 'Playfair Display', serif;
+            color: #714012;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            flex-grow: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            color: #714012;
+            margin-bottom: 5px;
+        }
+        
+        .date-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .date-input {
+            padding: 8px 12px;
+            border: 1px solid #d5c6a9;
+            border-radius: 20px;
+            background-color: white;
+            font-size: 14px;
+            color: #5b4b33;
+            flex-grow: 1;
+        }
+        
+        .range-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .range-slider {
+            flex-grow: 1;
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: #854a11;
+            border: 2px solid #854a11;
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(133, 74, 17, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .chart-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pinocchio Reports</h1>
+            <p class="subtitle">Database of Truth Analyses</p>
+            <div style="text-align: right; margin: -20px 0 20px;">
+                <a href="/" style="color: #854a11; text-decoration: none; font-weight: 600;">
+                    &larr; Back to Homepage
+                </a>
+            </div>
+        </header>
+
+        <!-- Dashboard overview section with key stats -->
+        <div class="dashboard-overview">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="total-reports">-</div>
+                    <div class="stat-label">Total Reports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚖️</div>
+                    <div class="stat-value" id="avg-score">-</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔍</div>
+                    <div class="stat-value" id="checked-domains">-</div>
+                    <div class="stat-label">Domains Checked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-value" id="high-misinfo">-</div>
+                    <div class="stat-label">High Misinfo</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts section -->
+        <div class="charts-section">
+            <div class="chart-row">
+                <div class="chart-container">
+                    <h3>Score Distribution</h3>
+                    <canvas id="score-distribution-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Activity Timeline</h3>
+                    <canvas id="activity-timeline-chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-container">
+                    <h3>Top Checked Domains</h3>
+                    <canvas id="domains-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Reliability Breakdown</h3>
+                    <canvas id="reliability-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced filtering options -->
+        <div class="advanced-filters">
+            <h3>Advanced Filters</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Date Range:</label>
+                    <div class="date-inputs">
+                        <input type="date" id="date-from" class="date-input">
+                        <span>to</span>
+                        <input type="date" id="date-to" class="date-input">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Domain:</label>
+                    <select id="domain-filter" class="filter-select">
+                        <option value="all">All Domains</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Score Range:</label>
+                    <div class="range-slider-container">
+                        <span id="score-min-value">0</span>
+                        <input type="range" id="score-min" min="0" max="10" value="0" class="range-slider">
+                        <input type="range" id="score-max" min="0" max="10" value="10" class="range-slider">
+                        <span id="score-max-value">10</span>
+                    </div>
+                </div>
+                <button id="apply-filters" class="btn">Apply Filters</button>
+                <button id="reset-filters" class="btn btn-secondary">Reset</button>
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-box" placeholder="Search reports...">
+            
+            <div class="filter-container">
+                <span class="filter-label">Filter by:</span>
+                <select id="score-filter" class="filter-select">
+                    <option value="all">All Scores</option>
+                    <option value="low">Low (0-3) - Reliable</option>
+                    <option value="medium">Medium (4-7) - Questionable</option>
+                    <option value="high">High (8-10) - Unreliable</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading reports...</p>
+        </div>
+        
+        <table id="reports-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%">Date & Time</th>
+                    <th style="width: 25%">URL</th>
+                    <th style="width: 30%">Page Title</th>
+                    <th style="width: 15%">Score</th>
+                    <th style="width: 15%">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="reports-body">
+                <!-- Report rows will be inserted here dynamically -->
+            </tbody>
+        </table>
+        
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-icon">📜</div>
+            <h3>No Reports Found</h3>
+            <p>There are no reports matching your search criteria.</p>
+        </div>
+        
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be inserted here dynamically -->
+        </div>
+        
+        <footer>
+            <p>✨ Pinocchio - The Wooden Truth Detective ✨</p>
+            <p>Developed by: Adrian Maier, Dimeji Aiyesan, Ashton Grant</p>
+            <p>&copy; 2023 Adrian Maier</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial variables
+            let currentPage = 1;
+            const reportsPerPage = 10;
+            let allReports = [];
+            
+            // DOM elements
+            const reportsTable = document.getElementById('reports-table');
+            const reportsBody = document.getElementById('reports-body');
+            const emptyState = document.getElementById('empty-state');
+            const loadingElement = document.getElementById('loading');
+            const paginationElement = document.getElementById('pagination');
+            const searchInput = document.getElementById('search-input');
+            const scoreFilter = document.getElementById('score-filter');
+            
+            // Load reports on page load
+            loadReports();
+            
+            // Add event listeners
+            searchInput.addEventListener('input', filterReports);
+            scoreFilter.addEventListener('change', filterReports);
+            
+            // Function to load reports from the API
+            function loadReports() {
+                showLoading();
+                
+                // Log that we're starting the fetch
+                console.log('Attempting to fetch reports from /api/reports');
+                
+                fetch('/api/reports')
+                    .then(response => {
+                        console.log('Received response:', response.status, response.statusText);
+                        
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                // Try to parse as JSON to get error details
+                                try {
+                                    const errorData = JSON.parse(text);
+                                    throw new Error(`API error (${response.status}): ${errorData.error || 'Unknown error'}`);
+                                } catch (e) {
+                                    throw new Error(`Server responded with status ${response.status}: ${response.statusText}. Details: ${text.substring(0, 100)}`);
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Successfully parsed data:', data);
+                        if (!data || !data.reports) {
+                            throw new Error('API response does not contain reports array. Response: ' + JSON.stringify(data).substring(0, 100));
+                        }
+                        
+                        allReports = data.reports || [];
+                        console.log(`Loaded ${allReports.length} reports`);
+                        displayReports(allReports);
+                        hideLoading();
+                    })
+                    .catch(error => {
+                        console.error('Error loading reports:', error);
+                        hideLoading();
+                        showError(`Failed to load reports: ${error.message}. Check the console for more details.`);
+                        
+                        // Show troubleshooting tips
+                        const troubleshootingTips = document.createElement('div');
+                        troubleshootingTips.innerHTML = `
+                            <h4 style="margin-top: 20px;">Troubleshooting Tips:</h4>
+                            <ul style="text-align: left; margin-top: 10px;">
+                                <li>Ensure the backend server is running on the correct port</li>
+                                <li>Check that the API endpoint exists at /api/reports</li>
+                                <li>Verify there are reports in the database</li>
+                                <li>Check browser console for CORS or network errors</li>
+                                <li>Try refreshing the page</li>
+                            </ul>
+                        `;
+                        emptyState.appendChild(troubleshootingTips);
+                    });
+            }
+            
+            // Function to display reports in the table
+            function displayReports(reports) {
+                // Clear table body
+                reportsBody.innerHTML = '';
+                
+                if (reports.length === 0) {
+                    // Show empty state if no reports
+                    reportsTable.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    emptyState.querySelector('h3').textContent = 'No Reports Found';
+                    emptyState.querySelector('p').textContent = 'There are no reports in the database yet. Use the extension to analyze some web pages.';
+                    paginationElement.style.display = 'none';
+                    return;
+                }
+                
+                // Show table and hide empty state
+                reportsTable.style.display = 'table';
+                emptyState.style.display = 'none';
+                
+                // Calculate pagination
+                const totalPages = Math.ceil(reports.length / reportsPerPage);
+                const startIndex = (currentPage - 1) * reportsPerPage;
+                const endIndex = Math.min(startIndex + reportsPerPage, reports.length);
+                
+                // Display current page of reports
+                for (let i = startIndex; i < endIndex; i++) {
+                    const report = reports[i];
+                    
+                    // Create new row
+                    const row = document.createElement('tr');
+                    
+                    // Format timestamp
+                    let formattedDate = 'Unknown date';
+                    try {
+                        const date = new Date(report.timestamp);
+                        formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    } catch (e) {
+                        console.error('Error formatting date for report:', report);
+                    }
+                    
+                    // Determine score class
+                    let scoreClass = 'score-medium';
+                    if (report.score <= 3) {
+                        scoreClass = 'score-low';
+                    } else if (report.score > 7) {
+                        scoreClass = 'score-high';
+                    }
+                    
+                    // Add cells to row
+                    row.innerHTML = `
+                        <td class="timestamp">${formattedDate}</td>
+                        <td class="url-cell">
+                            <a href="${report.url || '#'}" class="url" target="_blank" title="${report.url || 'Unknown URL'}">
+                                ${report.url || 'Unknown URL'}
+                            </a>
+                        </td>
+                        <td class="title-cell">
+                            <span class="title" title="${report.title || 'Untitled'}">
+                                ${report.title || 'Untitled'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="score ${scoreClass}">${report.score}/10</span>
+                        </td>
+                        <td class="actions">
+                            <a href="/api/reports/${report.id}/html" class="btn btn-view" target="_blank">View Report</a>
+                        </td>
+                    `;
+                    
+                    // Add row to table
+                    reportsBody.appendChild(row);
+                }
+                
+                // Update pagination
+                updatePagination(totalPages);
+            }
+            
+            // Function to update pagination controls
+            function updatePagination(totalPages) {
+                if (totalPages <= 1) {
+                    paginationElement.style.display = 'none';
+                    return;
+                }
+                
+                paginationElement.style.display = 'flex';
+                paginationElement.innerHTML = '';
+                
+                // Previous button
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'page-btn';
+                prevBtn.textContent = '← Prev';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        filterReports();
+                    }
+                });
+                paginationElement.appendChild(prevBtn);
+                
+                // Page buttons
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = i === currentPage ? 'page-btn active' : 'page-btn';
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener('click', () => {
+                        currentPage = i;
+                        filterReports();
+                    });
+                    paginationElement.appendChild(pageBtn);
+                }
+                
+                // Next button
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'page-btn';
+                nextBtn.textContent = 'Next →';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        filterReports();
+                    }
+                });
+                paginationElement.appendChild(nextBtn);
+            }
+            
+            // Function to filter reports based on search and score filter
+            function filterReports() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const scoreFilterValue = scoreFilter.value;
+                
+                let filteredReports = allReports.filter(report => {
+                    // Filter by search term
+                    const matchesSearch = 
+                        report.url.toLowerCase().includes(searchTerm) || 
+                        (report.title && report.title.toLowerCase().includes(searchTerm));
+                    
+                    // Filter by score
+                    let matchesScore = true;
+                    if (scoreFilterValue === 'low') {
+                        matchesScore = report.score <= 3;
+                    } else if (scoreFilterValue === 'medium') {
+                        matchesScore = report.score > 3 && report.score <= 7;
+                    } else if (scoreFilterValue === 'high') {
+                        matchesScore = report.score > 7;
+                    }
+                    
+                    return matchesSearch && matchesScore;
+                });
+                
+                // Reset to first page when filtering
+                currentPage = 1;
+                
+                // Display filtered reports
+                displayReports(filteredReports);
+            }
+            
+            // Helper functions for loading state
+            function showLoading() {
+                loadingElement.style.display = 'block';
+                reportsTable.style.display = 'none';
+                emptyState.style.display = 'none';
+            }
+            
+            function hideLoading() {
+                loadingElement.style.display = 'none';
+            }
+            
+            function showError(message) {
+                console.error("Display error:", message);
+                emptyState.innerHTML = `
+                    <div class="empty-icon">⚠️</div>
+                    <h3>Error</h3>
+                    <p>${message}</p>
+                    <button onclick="window.location.reload()" class="btn" style="margin-top: 20px; background-color: #854a11; color: white;">
+                        Refresh Page
+                    </button>
+                `;
+                emptyState.style.display = 'block';
+                reportsTable.style.display = 'none';
+            }
+
+            // Initialize chart instances as global variables
+            let scoreDistChart, activityChart, domainsChart, reliabilityChart;
+            
+            // Updated loadReports function to include dashboard stats initialization
+            function loadReports() {
+                showLoading();
+                
+                // Log that we're starting the fetch
+                console.log('Attempting to fetch reports from /api/reports');
+                
+                fetch('/api/reports')
+                    .then(response => {
+                        // ...existing response handling...
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Successfully parsed data:', data);
+                        if (!data || !data.reports) {
+                            throw new Error('API response does not contain reports array');
+                        }
+                        
+                        allReports = data.reports || [];
+                        console.log(`Loaded ${allReports.length} reports`);
+                        
+                        // Initialize dashboard with the loaded reports
+                        initializeDashboard(allReports);
+                        
+                        // Display reports in table
+                        displayReports(allReports);
+                        hideLoading();
+                    })
+                    .catch(error => {
+                        // ...existing error handling...
+                    });
+            }
+            
+            // New function to initialize the dashboard
+            function initializeDashboard(reports) {
+                updateOverviewStats(reports);
+                initializeCharts(reports);
+                populateDomainFilter(reports);
+                setupEventListeners();
+            }
+            
+            // Update the overview stats based on reports data
+            function updateOverviewStats(reports) {
+                const totalReports = reports.length;
+                document.getElementById('total-reports').textContent = totalReports;
+                
+                // Calculate average score
+                if (totalReports > 0) {
+                    const totalScore = reports.reduce((sum, report) => sum + (report.score || 0), 0);
+                    const avgScore = (totalScore / totalReports).toFixed(1);
+                    document.getElementById('avg-score').textContent = avgScore;
+                } else {
+                    document.getElementById('avg-score').textContent = '0.0';
+                }
+                
+                // Count unique domains
+                const domains = new Set(reports.map(report => {
+                    try {
+                        return new URL(report.url).hostname;
+                    } catch (e) {
+                        return 'unknown';
+                    }
+                }));
+                document.getElementById('checked-domains').textContent = domains.size;
+                
+                // Count reports with high misinformation scores (>7)
+                const highMisinfoCount = reports.filter(report => report.score > 7).length;
+                document.getElementById('high-misinfo').textContent = highMisinfoCount;
+            }
+            
+            // Initialize all charts
+            function initializeCharts(reports) {
+                initScoreDistributionChart(reports);
+                initActivityTimelineChart(reports);
+                initDomainsChart(reports);
+                initReliabilityChart(reports);
+            }
+            
+            // Initialize the score distribution chart
+            function initScoreDistributionChart(reports) {
+                // Count reports by score range
+                const scoreDistribution = Array(11).fill(0); // 0-10 scores
+                
+                reports.forEach(report => {
+                    const score = Math.round(report.score);
+                    if (score >= 0 && score <= 10) {
+                        scoreDistribution[score]++;
+                    }
+                });
+                
+                // Create chart
+                const ctx = document.getElementById('score-distribution-chart').getContext('2d');
+                scoreDistChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+                        datasets: [{
+                            label: 'Number of Reports',
+                            data: scoreDistribution,
+                            backgroundColor: [
+                                'rgba(76, 175, 80, 0.6)', // 0-3: Green (reliable)
+                                'rgba(76, 175, 80, 0.6)',
+                                'rgba(76, 175, 80, 0.6)',
+                                'rgba(76, 175, 80, 0.6)',
+                                'rgba(255, 193, 7, 0.6)', // 4-7: Yellow (questionable)
+                                'rgba(255, 193, 7, 0.6)',
+                                'rgba(255, 193, 7, 0.6)',
+                                'rgba(255, 193, 7, 0.6)',
+                                'rgba(244, 67, 54, 0.6)', // 8-10: Red (unreliable)
+                                'rgba(244, 67, 54, 0.6)',
+                                'rgba(244, 67, 54, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(76, 175, 80, 1)', // 0-3
+                                'rgba(76, 175, 80, 1)',
+                                'rgba(76, 175, 80, 1)',
+                                'rgba(76, 175, 80, 1)',
+                                'rgba(255, 193, 7, 1)', // 4-7
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(244, 67, 54, 1)', // 8-10
+                                'rgba(244, 67, 54, 1)',
+                                'rgba(244, 67, 54, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Reports'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Misinformation Score'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: (items) => {
+                                        const score = items[0].label;
+                                        return `Score: ${score}/10`;
+                                    },
+                                    label: (context) => {
+                                        return `Reports: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Initialize the activity timeline chart
+            function initActivityTimelineChart(reports) {
+                // Group reports by date
+                const timeData = {};
+                const now = new Date();
+                
+                // Create date markers for the past 14 days
+                for (let i = 13; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    timeData[dateStr] = 0;
+                }
+                
+                // Count reports per day
+                reports.forEach(report => {
+                    if (report.timestamp) {
+                        const date = new Date(report.timestamp);
+                        const dateStr = date.toISOString().split('T')[0];
+                        
+                        if (timeData[dateStr] !== undefined) {
+                            timeData[dateStr]++;
+                        }
+                    }
+                });
+                
+                // Create chart
+                const ctx = document.getElementById('activity-timeline-chart').getContext('2d');
+                activityChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(timeData),
+                        datasets: [{
+                            label: 'Reports',
+                            data: Object.values(timeData),
+                            fill: true,
+                            backgroundColor: 'rgba(133, 74, 17, 0.1)',
+                            borderColor: '#854a11',
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Reports'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Initialize the domains chart (top checked domains)
+            function initDomainsChart(reports) {
+                // Count reports by domain
+                const domainCounts = {};
+                reports.forEach(report => {
+                    try {
+                        const domain = new URL(report.url).hostname;
+                        domainCounts[domain] = (domainCounts[domain] || 0) + 1;
+                    } catch (e) {
+                        // Skip invalid URLs
+                    }
+                });
+                
+                // Sort and get top domains
+                const sortedDomains = Object.entries(domainCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+                
+                const domains = sortedDomains.map(item => item[0]);
+                const counts = sortedDomains.map(item => item[1]);
+                
+                // Create chart
+                const ctx = document.getElementById('domains-chart').getContext('2d');
+                domainsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: domains,
+                        datasets: [{
+                            label: 'Number of Reports',
+                            data: counts,
+                            backgroundColor: 'rgba(133, 74, 17, 0.6)',
+                            borderColor: '#854a11',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Reports'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Initialize the reliability breakdown chart
+            function initReliabilityChart(reports) {
+                // Count reports by reliability category
+                let reliable = 0;
+                let questionable = 0;
+                let unreliable = 0;
+                
+                reports.forEach(report => {
+                    const score = report.score;
+                    if (score <= 3) reliable++;
+                    else if (score <= 7) questionable++;
+                    else unreliable++;
+                });
+                
+                // Create chart
+                const ctx = document.getElementById('reliability-chart').getContext('2d');
+                reliabilityChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Reliable (0-3)', 'Questionable (4-7)', 'Unreliable (8-10)'],
+                        datasets: [{
+                            data: [reliable, questionable, unreliable],
+                            backgroundColor: [
+                                'rgba(76, 175, 80, 0.6)',
+                                'rgba(255, 193, 7, 0.6)',
+                                'rgba(244, 67, 54, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(76, 175, 80, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(244, 67, 54, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Populate the domain filter dropdown
+            function populateDomainFilter(reports) {
+                const domainFilter = document.getElementById('domain-filter');
+                const domains = new Set();
+                
+                reports.forEach(report => {
+                    try {
+                        const domain = new URL(report.url).hostname;
+                        domains.add(domain);
+                    } catch (e) {
+                        // Skip invalid URLs
+                    }
+                });
+                
+                // Sort domains alphabetically
+                const sortedDomains = Array.from(domains).sort();
+                
+                // Clear existing options (except the first one)
+                while (domainFilter.options.length > 1) {
+                    domainFilter.remove(1);
+                }
+                
+                // Add domain options
+                sortedDomains.forEach(domain => {
+                    const option = document.createElement('option');
+                    option.value = domain;
+                    option.textContent = domain;
+                    domainFilter.appendChild(option);
+                });
+            }
+            
+            // Set up event listeners for filters
+            function setupEventListeners() {
+                const applyFiltersBtn = document.getElementById('apply-filters');
+                const resetFiltersBtn = document.getElementById('reset-filters');
+                const scoreMin = document.getElementById('score-min');
+                const scoreMax = document.getElementById('score-max');
+                const scoreMinValue = document.getElementById('score-min-value');
+                const scoreMaxValue = document.getElementById('score-max-value');
+                
+                // Initialize date fields
+                const dateTo = document.getElementById('date-to');
+                const dateFrom = document.getElementById('date-from');
+                
+                // Set date-to to today
+                const today = new Date();
+                dateTo.valueAsDate = today;
+                
+                // Set date-from to 30 days ago
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                dateFrom.valueAsDate = thirtyDaysAgo;
+                
+                // Update score value displays
+                scoreMin.addEventListener('input', () => {
+                    scoreMinValue.textContent = scoreMin.value;
+                    // Ensure min doesn't exceed max
+                    if (parseInt(scoreMin.value) > parseInt(scoreMax.value)) {
+                        scoreMax.value = scoreMin.value;
+                        scoreMaxValue.textContent = scoreMax.value;
+                    }
+                });
+                
+                scoreMax.addEventListener('input', () => {
+                    scoreMaxValue.textContent = scoreMax.value;
+                    // Ensure max isn't below min
+                    if (parseInt(scoreMax.value) < parseInt(scoreMin.value)) {
+                        scoreMin.value = scoreMax.value;
+                        scoreMinValue.textContent = scoreMin.value;
+                    }
+                });
+                
+                // Apply filters button
+                applyFiltersBtn.addEventListener('click', () => {
+                    applyAdvancedFilters();
+                });
+                
+                // Reset filters button
+                resetFiltersBtn.addEventListener('click', () => {
+                    resetFilters();
+                });
+            }
+            
+            // Apply advanced filters
+            function applyAdvancedFilters() {
+                const dateFrom = document.getElementById('date-from').valueAsDate;
+                const dateTo = document.getElementById('date-to').valueAsDate;
+                const domain = document.getElementById('domain-filter').value;
+                const scoreMin = parseInt(document.getElementById('score-min').value);
+                const scoreMax = parseInt(document.getElementById('score-max').value);
+                
+                // Add one day to dateTo to include the full day
+                const adjustedDateTo = new Date(dateTo);
+                adjustedDateTo.setDate(adjustedDateTo.getDate() + 1);
+                
+                let filteredReports = allReports.filter(report => {
+                    // Filter by score range
+                    const score = report.score;
+                    const scoreInRange = score >= scoreMin && score <= scoreMax;
+                    
+                    // Filter by domain
+                    let domainMatch = true;
+                    if (domain !== 'all') {
+                        try {
+                            const reportDomain = new URL(report.url).hostname;
+                            domainMatch = reportDomain === domain;
+                        } catch (e) {
+                            domainMatch = false;
+                        }
+                    }
+                    
+                    // Filter by date range
+                    let dateInRange = true;
+                    if (dateFrom && dateTo && report.timestamp) {
+                        const reportDate = new Date(report.timestamp);
+                        dateInRange = reportDate >= dateFrom && reportDate < adjustedDateTo;
+                    }
+                    
+                    return scoreInRange && domainMatch && dateInRange;
+                });
+                
+                // Update display with filtered reports
+                displayReports(filteredReports);
+                
+                // Update charts with filtered data
+                updateChartsWithFilteredData(filteredReports);
+            }
+            
+            // Reset all filters
+            function resetFilters() {
+                // Reset date fields
+                const today = new Date();
+                document.getElementById('date-to').valueAsDate = today;
+                
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                document.getElementById('date-from').valueAsDate = thirtyDaysAgo;
+                
+                // Reset domain filter
+                document.getElementById('domain-filter').value = 'all';
+                
+                // Reset score range
+                document.getElementById('score-min').value = 0;
+                document.getElementById('score-max').value = 10;
+                document.getElementById('score-min-value').textContent = '0';
+                document.getElementById('score-max-value').textContent = '10';
+                
+                // Reset display
+                displayReports(allReports);
+                
+                // Reset charts
+                updateChartsWithFilteredData(allReports);
+            }
+            
+            // Update charts with filtered data
+            function updateChartsWithFilteredData(filteredReports) {
+                // Destroy existing charts
+                if (scoreDistChart) scoreDistChart.destroy();
+                if (activityChart) activityChart.destroy();
+                if (domainsChart) domainsChart.destroy();
+                if (reliabilityChart) reliabilityChart.destroy();
+                
+                // Initialize charts with new data
+                initializeCharts(filteredReports);
+                
+                // Update overview stats
+                updateOverviewStats(filteredReports);
+            }
+        });
+    </script>
+</body>
+</html>

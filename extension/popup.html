@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Pinocchio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Include both jsPDF and html2canvas locally instead of CDN -->
+  <script src="libs/jspdf.min.js"></script>
+  <script src="libs/html2canvas.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Pinocchio</h1>
+      <p class="subtitle">The Wooden Truth Detective</p>
+    </header>
+    
+    <!-- Website title display -->
+    <div class="site-title-container">
+      <h3 id="website-title" class="website-title">Analyzing page...</h3>
+    </div>
+    
+    <div id="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Carving out the truth...</p>
+    </div>
+    
+    <div id="results" class="results-container" style="display: none;">
+      <div class="score-container">
+        <h2>Misinformation Score</h2>
+        
+        <!-- Pinocchio with extending nose -->
+        <div class="pinocchio-container">
+          <img src="images/pinocchio.png" alt="Pinocchio" class="pinocchio-face">
+          <div id="pinocchio-nose" class="pinocchio-nose"></div>
+        </div>
+        
+        <div class="score-wrapper">
+          <span id="score-badge" class="score-badge">?</span>
+          <span id="score-label" class="score-label">0/10</span>
+        </div>
+        <div id="score-description" class="score-description">Analyzing...</div>
+      </div>
+      
+      <div class="summary-container">
+        <h2>Summary</h2>
+        <p id="summary"></p>
+      </div>
+      
+      <div class="report-container">
+        <h2>Truth Report</h2>
+        <p id="report"></p>
+      </div>
+      
+      <div class="context-container">
+        <h2>More Context</h2>
+        <p id="additional-context"></p>
+      </div>
+      
+      <div class="sources-container">
+        <h2>Sources Checked</h2>
+        <ul id="sources-list" class="sources-list"></ul>
+      </div>
+    </div>
+    
+    <div id="error" class="error-container" style="display: none;">
+      <p id="error-message"></p>
+    </div>
+    
+    <footer>
+      <p>✨ Crafted with Geppetto's Magic ✨</p>
+      <!-- URL display moved to footer -->
+      <div class="url-footer-container">
+        <span class="url-icon">🔗</span>
+        <a id="current-url" class="current-url" href="#" target="_blank" title="Open in new tab"></a>
+      </div>
+      <div class="button-container">
+        <button id="retry-button" class="retry-button">Get Fresh Analysis</button>
+        <button id="share-button" class="share-button">Download Report</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

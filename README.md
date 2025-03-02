@@ -145,7 +145,7 @@ Pinocchio/
 
 - Adrian Maier
 - Dimeji Aiyesan
-- Ashton Grant
+- [Ashton Grant](https://github.com/TulipTult)
 - [Hariz Shirazi](https://github.com/BomberFish)
 
 ## License

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -11,28 +11,44 @@
   <script src="libs/html2canvas.min.js"></script>
 </head>
 <body>
-  <div class="container fade-in">
-    <header class="slide-down">
+  <!-- Theme Toggle Button -->
+  <div class="theme-toggle">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle dark mode">
+      <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 12H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M22 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M19.78 4.22L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6.34 17.66L4.22 19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M19.78 19.78L17.66 17.66" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6.34 6.34L4.22 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="container">
+    <header>
       <h1>Pinocchio</h1>
       <p class="subtitle">The Wooden Truth Detective</p>
-      <!-- Add theme toggle button -->
-      <div class="theme-toggle-container">
-        <button id="theme-toggle" class="theme-toggle" title="Toggle light/dark mode">☀️</button>
-      </div>
     </header>
     
     <!-- Website title display -->
-    <div class="site-title-container slide-in-right">
+    <div class="site-title-container">
       <h3 id="website-title" class="website-title">Analyzing page...</h3>
     </div>
     
-    <div id="loading" class="loading-container fade-in">
+    <div id="loading" class="loading-container">
       <div class="loading-spinner"></div>
       <p>Carving out the truth...</p>
     </div>
     
-    <div id="results" class="results-container slide-up" style="display: none;">
-      <div class="score-container hover-lift">
+    <div id="results" class="results-container" style="display: none;">
+      <div class="score-container">
         <h2>Misinformation Score</h2>
         
         <!-- Pinocchio with extending nose -->
@@ -48,36 +64,24 @@
         <div id="score-description" class="score-description">Analyzing...</div>
       </div>
       
-      <div class="summary-container hover-lift slide-in-left">
-        <div class="section-heading">
-          <span class="icon">📝</span>
-          <h2>Summary</h2>
-        </div>
-        <div id="summary" class="content-text"></div>
+      <div class="summary-container">
+        <h2>Summary</h2>
+        <p id="summary"></p>
       </div>
       
-      <div class="report-container hover-lift slide-in-right">
-        <div class="section-heading">
-          <span class="icon">🔍</span>
-          <h2>Truth Report</h2>
-        </div>
-        <div id="report" class="content-text"></div>
+      <div class="report-container">
+        <h2>Truth Report</h2>
+        <p id="report"></p>
       </div>
       
-      <div class="context-container hover-lift slide-in-left">
-        <div class="section-heading">
-          <span class="icon">💡</span>
-          <h2>More Context</h2>
-        </div>
-        <div id="additional-context" class="content-text"></div>
+      <div class="context-container">
+        <h2>More Context</h2>
+        <p id="additional-context"></p>
       </div>
       
-      <div class="sources-container hover-lift slide-in-right">
-        <div class="section-heading">
-          <span class="icon">📚</span>
-          <h2>Sources Checked</h2>
-        </div>
-        <ul id="sources-list" class="sources-list content-list"></ul>
+      <div class="sources-container">
+        <h2>Sources Checked</h2>
+        <ul id="sources-list" class="sources-list"></ul>
       </div>
     </div>
     
@@ -89,15 +93,8 @@
       <p>✨ Crafted with Geppetto's Magic ✨</p>
       <!-- URL display moved to footer -->
       <div class="url-footer-container">
-        <span>
-        <div class="url-icon">🔗</div>
-        <a id="current-url" class="current-url" href="#" target="_blank" title="Opens in new tab">Open current page</a>
-        </span>
-
-        <span>
-        <div class="url-icon">🏛️</div>
-        <a id="ia-url" class="current-url" href="#" target="_blank" title="Opens in new tab">Open in Internet Archive</a>
-        </span>
+        <span class="url-icon">🔗</span>
+        <a id="current-url" class="current-url" href="#" target="_blank" title="Open in new tab"></a>
       </div>
       <div class="button-container">
         <button id="retry-button" class="retry-button">Get Fresh Analysis</button>
@@ -107,5 +104,31 @@
   </div>
 
   <script src="popup.js"></script>
+  <script>
+    // Theme switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const themeToggleBtn = document.getElementById('theme-toggle-btn');
+      
+      // Check for saved theme preference or use system preference
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      // Set initial theme
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      
+      // Toggle theme when button is clicked
+      themeToggleBtn.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+      });
+    });
+  </script>
 </body>
 </html>

@@ -21,7 +21,8 @@
 	  "scripting",
 	  "storage",
 	  "downloads",
-	  "*://www.youtube.com/*"
+	  "*://www.youtube.com/*",
+	  "contextMenus"
 	],
 	"host_permissions": [
 	  "http://172.105.18.148:8080/*"

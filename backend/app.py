@@ -9,9 +9,19 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Define server variables
+SERVER_HOST = '0.0.0.0'  # Listen on all interfaces
+SERVER_PORT = 8080
+SERVER_URL = os.getenv('SERVER_URL', 'http://172.105.18.148:8080')  # External URL for absolute references
+DEBUG_MODE = os.getenv('DEBUG_MODE', 'False').lower() == 'true'  # Default to False for production
+
 # The static folder path should be absolute to ensure it finds the correct directory
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'))
-CORS(app)  # Enable CORS for all routes
+
+# Configure CORS to allow requests from extension and browser
+CORS(app, resources={
+    r"/api/*": {"origins": ["chrome-extension://*", "http://172.105.18.148:8080"]}
+})
 
 # Initialize database service
 db = ReportDatabase()
@@ -109,6 +119,16 @@ def get_report_html(report_id):
         print(f"Error retrieving report HTML: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
+# Add a helper function to generate absolute URLs
+def get_absolute_url(path):
+    """Generate absolute URL from a relative path"""
+    return f"{SERVER_URL}{path}"
+
+@app.context_processor
+def utility_processor():
+    """Make utility functions available to templates"""
+    return dict(get_absolute_url=get_absolute_url)
+
 @app.route('/reports/<path:filename>')
 def serve_report(filename):
     """Serve static report files"""
@@ -148,4 +168,6 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    print(f"Starting server at {SERVER_HOST}:{SERVER_PORT}")
+    print(f"Server will be externally accessible at {SERVER_URL}")
+    app.run(host=SERVER_HOST, port=SERVER_PORT, debug=DEBUG_MODE)

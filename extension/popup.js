@@ -12,6 +12,25 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTitle = '';
     let currentAnalysisData = null;
     
+    // Global variable to store the source text - MOVED TO TOP LEVEL for better access
+    let sourceText = "";
+    
+    // Debug function to help trace text storage
+    function logSourceTextUpdate(newText, source) {
+        console.log(`Source text updated from [${source}] - Length: ${newText.length}`);
+        console.log("Text sample:", newText.substring(0, 100) + "...");
+    }
+    
+    // Enhanced source text storage function
+    function storeSourceText(text, source = "unknown") {
+        if (!text) {
+            console.warn("Attempted to store empty text from source:", source);
+            return;
+        }
+        sourceText = text;
+        logSourceTextUpdate(text, source);
+    }
+    
     // Show loading initially
     resultsDiv.style.display = 'none';
     errorDiv.style.display = 'none';
@@ -155,8 +174,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const content = results[0].result;
         
-        // Send the content to our backend server
-        fetch('http://localhost:8080/api/analyze', {
+        // Store the source text - EXPLICITLY SET SOURCE
+        storeSourceText(content, "page content");
+        
+        // Send the content to our backend server - UPDATED SERVER ADDRESS
+        fetch('http://172.105.18.148:8080/api/analyze', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -351,8 +373,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Generate the HTML report
         const reportHtml = createReportHtml(data, score);
         
-        // Send the report to the backend
-        fetch('http://localhost:8080/api/reports', {
+        // Send the report to the backend - UPDATED SERVER ADDRESS
+        fetch('http://172.105.18.148:8080/api/reports', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -562,4 +584,145 @@ document.addEventListener('DOMContentLoaded', function() {
         return '<li>Error loading sources</li>';
       }
     }
+    
+    // Initialize the source viewer functionality
+    function initSourceViewer() {
+        console.log("Initializing source viewer...");
+        
+        const sourceViewerBtn = document.getElementById('source-viewer-btn');
+        const sourceModal = document.getElementById('source-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const sourceTextElement = document.getElementById('source-text');
+        
+        if (!sourceViewerBtn || !sourceModal || !closeModalBtn || !sourceTextElement) {
+            console.error("Source viewer elements not found:", {
+                button: !!sourceViewerBtn, 
+                modal: !!sourceModal, 
+                closeBtn: !!closeModalBtn, 
+                textEl: !!sourceTextElement
+            });
+            return;
+        }
+        
+        // Make button more visible during development
+        sourceViewerBtn.style.opacity = "0.7"; 
+        sourceViewerBtn.textContent = "View Source";
+        sourceViewerBtn.style.padding = "5px";
+        sourceViewerBtn.style.backgroundColor = "#f0f0f0";
+        sourceViewerBtn.style.border = "1px solid #ccc";
+        
+        // Show modal when button is clicked
+        sourceViewerBtn.addEventListener('click', () => {
+            console.log("Source viewer button clicked");
+            console.log("Current source text length:", sourceText ? sourceText.length : 0);
+            
+            sourceTextElement.textContent = sourceText || "No source text available.";
+            sourceModal.style.display = 'block';
+        });
+        
+        // Hide modal when close button is clicked
+        closeModalBtn.addEventListener('click', () => {
+            console.log("Close modal button clicked");
+            sourceModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside the content
+        sourceModal.addEventListener('click', (event) => {
+            if (event.target === sourceModal) {
+                sourceModal.style.display = 'none';
+            }
+        });
+        
+        console.log("Source viewer initialized successfully");
+    }
+    
+    // Initialize source viewer as soon as DOM is loaded
+    initSourceViewer();
+    
+    // Listener for messages from background scripts and content scripts
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        console.log("Message received in popup.js:", message.action);
+        
+        if (message.action === 'processContent' && message.source === 'youtube') {
+            console.log("Processing YouTube content");
+            // Store the YouTube transcript as source text
+            storeSourceText(message.content, "youtube transcript");
+        }
+    });
+    
+    // Store the source text whenever content is sent for processing
+    function storeSourceText(text) {
+        sourceText = text;
+    }
+    
+    initSourceViewer();
+    
+    // Modify existing submit handler or text processing function
+    // to store the text before sending it to the backend
+    
+    // Example: If there's a submit button or form submission
+    const form = document.querySelector('form'); // Adjust selector as needed
+    if (form) {
+        const originalSubmit = form.onsubmit;
+        form.onsubmit = function(e) {
+            // Get the input text (adjust selectors based on your actual form)
+            const inputText = document.querySelector('textarea').value || 
+                              document.querySelector('input[type="text"]').value || 
+                              '';
+            
+            // Store the text before processing
+            storeSourceText(inputText);
+            
+            // Call the original submit handler
+            if (originalSubmit) {
+                return originalSubmit.call(this, e);
+            }
+        };
+    }
+    
+    // If you're using buttons instead of form submit, find and modify those handlers
+    const processButtons = document.querySelectorAll('.process-button'); // Adjust selector
+    processButtons.forEach(button => {
+        const originalClick = button.onclick;
+        button.onclick = function(e) {
+            // Capture input text
+            const inputText = document.querySelector('textarea').value || 
+                              document.querySelector('input[type="text"]').value || 
+                              '';
+            
+            // Store the text
+            storeSourceText(inputText);
+            
+            // Call original click handler
+            if (originalClick) {
+                return originalClick.call(this, e);
+            }
+        };
+    });
+    
+    // For handling file uploads, add this to your file reader callback
+    function handleFileUpload(file) {
+        // ...existing code...
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fileContent = e.target.result;
+            
+            // Store the file content as source text
+            storeSourceText(fileContent);
+            
+            // Continue with existing processing
+            // ...existing code...
+        };
+        
+        reader.readAsText(file);
+    }
+    
+    // Add a listener for YouTube transcript processing
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === 'processContent' && message.source === 'youtube') {
+            // Store the YouTube transcript as source text
+            storeSourceText(message.content);
+        }
+    });
   });

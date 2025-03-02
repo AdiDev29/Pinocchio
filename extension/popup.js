@@ -6,30 +6,64 @@ document.addEventListener('DOMContentLoaded', function() {
     const retryButton = document.getElementById('retry-button');
     const shareButton = document.getElementById('share-button');
     const currentUrlElement = document.getElementById('current-url');
+    const iaUrlElement = document.getElementById('ia-url');
     const websiteTitleElement = document.getElementById('website-title');
+    const themeToggle = document.getElementById('theme-toggle');
     
     let currentUrl = '';
     let currentTitle = '';
-    let currentAnalysisData = null;
     
-    // Global variable to store the source text - MOVED TO TOP LEVEL for better access
-    let sourceText = "";
-    
-    // Debug function to help trace text storage
-    function logSourceTextUpdate(newText, source) {
-        console.log(`Source text updated from [${source}] - Length: ${newText.length}`);
-        console.log("Text sample:", newText.substring(0, 100) + "...");
+    // Theme functions
+    function initTheme() {
+        // Check for saved theme preference
+        chrome.storage.local.get(['theme'], function(result) {
+            const savedTheme = result.theme;
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Use saved theme or fall back to system preference
+            if (savedTheme === 'dark' || (savedTheme !== 'light' && prefersDark)) {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '🌙';
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                themeToggle.innerHTML = '☀️';
+            }
+        });
     }
     
-    // Enhanced source text storage function
-    function storeSourceText(text, source = "unknown") {
-        if (!text) {
-            console.warn("Attempted to store empty text from source:", source);
-            return;
+    function toggleTheme() {
+        if (document.body.getAttribute('data-theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'light');
+            themeToggle.innerHTML = '☀️';
+            chrome.storage.local.set({theme: 'light'});
+        } else {
+            document.body.setAttribute('data-theme', 'dark');
+            themeToggle.innerHTML = '🌙';
+            chrome.storage.local.set({theme: 'dark'});
         }
-        sourceText = text;
-        logSourceTextUpdate(text, source);
     }
+    
+    // Add theme toggle event listener
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // Initialize theme
+    initTheme();
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        // Only auto-change if user hasn't set a preference
+        chrome.storage.local.get(['theme'], function(result) {
+            if (!result.theme) {
+                if (e.matches) {
+                    document.body.setAttribute('data-theme', 'dark');
+                    themeToggle.innerHTML = '🌙';
+                } else {
+                    document.body.setAttribute('data-theme', 'light');
+                    themeToggle.innerHTML = '☀️';
+                }
+            }
+        });
+    });
     
     // Show loading initially
     resultsDiv.style.display = 'none';
@@ -116,6 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {
       currentUrlElement.textContent = formatUrl(currentUrl);
       currentUrlElement.href = currentUrl;
       currentUrlElement.title = currentUrl; // Full URL on hover
+
+      // Set the Internet Archive URL
+      iaUrlElement.href = `https://web.archive.org/*/${currentUrl}`;
     }
     
     function formatUrl(url) {
@@ -174,10 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const content = results[0].result;
         
-        // Store the source text - EXPLICITLY SET SOURCE
-        storeSourceText(content, "page content");
-        
-        // Send the content to our backend server - UPDATED SERVER ADDRESS
+        // Send the content to our backend server
         fetch('http://172.105.18.148:8080/api/analyze', {
           method: 'POST',
           headers: {
@@ -197,10 +231,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
           console.log("Analysis complete, results:", data);
-          
-          // Store the analysis data for potential later use
-          currentAnalysisData = data;
-          
+		  
+			// Store the analysis data for potential later use
+			currentAnalysisData = data;
+
           // Only store in cache if we have valid data
           if (data && !data.error) {
             // Cache the result for this URL
@@ -362,145 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
         li.textContent = 'No sources available';
         sourcesList.appendChild(li);
       }
-
-      // Automatically generate and send report to backend
-      generateAndSendReport(data, score);
-    }
-    
-    // New function to generate and send report to the backend
-    function generateAndSendReport(data, score) {
-      try {
-        // Generate the HTML report
-        const reportHtml = createReportHtml(data, score);
-        
-        // Send the report to the backend - UPDATED SERVER ADDRESS
-        fetch('http://172.105.18.148:8080/api/reports', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            url: currentUrl,
-            title: currentTitle,
-            score: score,
-            html: reportHtml
-          })
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Server responded with status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log("Report saved to backend:", data);
-        })
-        .catch(error => {
-          console.error("Error saving report to backend:", error);
-        });
-      } catch (error) {
-        console.error("Error generating report for backend:", error);
-      }
-    }
-    
-    // Helper function to create HTML report content
-    function createReportHtml(data, score) {
-      const summary = document.getElementById('summary').textContent;
-      const report = document.getElementById('report').textContent;
-      const additionalContext = document.getElementById('additional-context').textContent;
-      
-      // Determine score color and description
-      let scoreColor, scoreBackground, scoreDescription, scoreIcon;
-      if (score <= 3) {
-        scoreColor = '#4CAF50';
-        scoreBackground = 'rgba(76, 175, 80, 0.1)';
-        scoreDescription = 'Generally Reliable';
-        scoreIcon = '✓';
-      } else if (score <= 7) {
-        scoreColor = '#FFC107';
-        scoreBackground = 'rgba(255, 193, 7, 0.1)';
-        scoreDescription = 'Potentially Misleading';
-        scoreIcon = '⚠';
-      } else {
-        scoreColor = '#F44336';
-        scoreBackground = 'rgba(244, 67, 54, 0.1)';
-        scoreDescription = 'Likely Unreliable';
-        scoreIcon = '✗';
-      }
-      
-      // Create HTML report
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Pinocchio Report - ${currentTitle}</title>
-          <style>
-            body { font-family: 'Nunito', Arial, sans-serif; color: #5b4b33; margin: 0; padding: 20px; background-color: #f9f4e8; }
-            .container { max-width: 800px; margin: 0 auto; background: linear-gradient(135deg, #f7f0e1 0%, #eadfc5 100%); padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(91, 75, 51, 0.15); }
-            h1 { color: #854a11; font-size: 28px; text-align: center; margin-bottom: 5px; }
-            h2 { color: #714012; font-size: 18px; border-bottom: 1px solid #c4a77d; padding-bottom: 5px; margin-top: 25px; }
-            .subtitle { text-align: center; color: #7d6843; font-size: 16px; margin-bottom: 30px; }
-            .score-container { text-align: center; margin: 20px 0; padding: 20px; border-radius: 10px; background-color: ${scoreBackground}; border: 1px solid ${scoreColor}; }
-            .score-value { font-size: 28px; font-weight: bold; color: ${scoreColor}; margin: 10px 0; }
-            .score-description { font-size: 16px; color: ${scoreColor}; margin: 5px 0; }
-            .score-badge { display: inline-block; width: 30px; height: 30px; line-height: 30px; text-align: center; border-radius: 50%; background-color: ${scoreColor}; color: white; font-size: 16px; font-weight: bold; margin-right: 10px; }
-            .section { background-color: #faf6eb; padding: 15px; margin: 15px 0; border-radius: 8px; }
-            .url { font-size: 12px; color: #7d6843; text-align: center; margin-bottom: 20px; word-break: break-all; }
-            .date { text-align: center; font-size: 12px; color: #7d6843; margin-top: 10px; }
-            .footer { text-align: center; margin-top: 30px; color: #7d6843; font-size: 12px; }
-            .sources { list-style-type: none; padding-left: 20px; }
-            .sources li { margin-bottom: 8px; position: relative; }
-            .sources li:before { content: '•'; position: absolute; left: -15px; color: #854a11; }
-            a { color: #854a11; text-decoration: none; }
-            a:hover { text-decoration: underline; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Pinocchio Report</h1>
-            <p class="subtitle">Fact-Check Analysis</p>
-            <p class="url">URL: ${currentUrl}</p>
-            
-            <div class="score-container">
-              <h2>Misinformation Score</h2>
-              <div class="score-badge">${scoreIcon}</div>
-              <div class="score-value">${score}/10</div>
-              <div class="score-description">${scoreDescription}</div>
-            </div>
-            
-            <div class="section">
-              <h2>Summary</h2>
-              <p>${summary}</p>
-            </div>
-            
-            <div class="section">
-              <h2>Truth Report</h2>
-              <p>${report}</p>
-            </div>
-            
-            <div class="section">
-              <h2>More Context</h2>
-              <p>${additionalContext}</p>
-            </div>
-            
-            <div class="section">
-              <h2>Sources Checked</h2>
-              <ul class="sources">
-                ${generateSourcesList()}
-              </ul>
-            </div>
-            
-            <p class="date">Generated: ${new Date().toLocaleString()}</p>
-            <div class="footer">
-              <p>✨ Generated by Pinocchio - The Wooden Truth Detective ✨</p>
-              <p>Developed by: Adrian Maier, Dimeji Aiyesan, Ashton Grant</p>
-              <p>&copy; 2023 Adrian Maier</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
     }
     
     function getPageContent() {
@@ -535,8 +430,172 @@ document.addEventListener('DOMContentLoaded', function() {
         const report = document.getElementById('report').textContent;
         const additionalContext = document.getElementById('additional-context').textContent;
         
-        // Create the report HTML
-        const reportHtml = createReportHtml(currentAnalysisData, scoreNum);
+        // Determine score color and description
+        let scoreColor, scoreBackground, scoreDescription, scoreIcon;
+        if (scoreNum <= 3) {
+          scoreColor = '#4CAF50';
+          scoreBackground = 'rgba(76, 175, 80, 0.1)';
+          scoreDescription = 'Generally Reliable';
+          scoreIcon = '✓';
+        } else if (scoreNum <= 7) {
+          scoreColor = '#FFC107';
+          scoreBackground = 'rgba(255, 193, 7, 0.1)';
+          scoreDescription = 'Potentially Misleading';
+          scoreIcon = '⚠';
+        } else {
+          scoreColor = '#F44336';
+          scoreBackground = 'rgba(244, 67, 54, 0.1)';
+          scoreDescription = 'Likely Unreliable';
+          scoreIcon = '✗';
+        }
+
+        // Calculate nose length based on score (same logic as in displayResults)
+        const maxNoseLength = 200; // Default if CSS variable can't be accessed in this context
+        const noseLength = Math.max(5, Math.round((scoreNum / 10) * maxNoseLength));
+        
+        // Placeholder base64 image for Pinocchio's face
+        const pinocchioBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyNpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChNYWNpbnRvc2gpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjFFOTcwNUUyRUZBMjExRTQ4MDU3RThBRDY5RDY5NjM0IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjFFOTcwNUUzRUZBMjExRTQ4MDU3RThBRDY5RDY5NjM0Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MUU5NzA1RTBFRkEyMTFFNDgwNTdFOEFENjlENjk2MzQiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MUU5NzA1RTFFRkEyMTFFNDgwNTdFOEFENjlENjk2MzQiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7N1+pjAAAF9klEQVR42uxdaYhc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';
+        
+        // Get the current theme for report styling
+        const currentTheme = document.body.getAttribute('data-theme') || 'light';
+        
+        // Create a formatted HTML report with score coloring and Pinocchio nose
+        const reportHtml = `
+          <!DOCTYPE html>
+          <html data-theme="${currentTheme}">
+          <head>
+            <meta charset="UTF-8">
+            <title>Pinocchio Report - ${currentTitle}</title>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap');
+              
+              :root {
+                --bg-color: #f9f4e8;
+                --container-bg: linear-gradient(135deg, #f7f0e1 0%, #eadfc5 100%);
+                --text-color: #5b4b33;
+                --title-color: #854a11;
+                --subtitle-color: #7d6843;
+                --heading-color: #714012;
+                --border-color: #c4a77d;
+                --section-bg: #faf6eb;
+                --nose-height: 11px;
+                --nose-color: #D8B991;
+                --nose-border-radius: 6px;
+              }
+              
+              [data-theme="dark"] {
+                --bg-color: #2c2620;
+                --container-bg: linear-gradient(135deg, #3a322a 0%, #2a241e 100%);
+                --text-color: #e0d5c4;
+                --title-color: #d9b380;
+                --subtitle-color: #b8a88e;
+                --heading-color: #d9b380;
+                --border-color: #6d5c45;
+                --section-bg: #3a322a;
+              }
+              
+              body { font-family: 'Nunito', Arial, sans-serif; color: var(--text-color); margin: 0; padding: 20px; background-color: var(--bg-color); }
+              .container { max-width: 800px; margin: 0 auto; background: var(--container-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(91, 75, 51, 0.15); }
+              h1 { color: var(--title-color); font-size: 28px; text-align: center; margin-bottom: 5px; }
+              h2 { color: var(--heading-color); font-size: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-top: 25px; }
+              .subtitle { text-align: center; color: var(--subtitle-color); font-size: 16px; margin-bottom: 30px; }
+              .score-container { text-align: center; margin: 20px 0; padding: 20px; border-radius: 10px; background-color: ${scoreBackground}; border: 1px solid ${scoreColor}; }
+              .score-value { font-size: 28px; font-weight: bold; color: ${scoreColor}; margin: 10px 0; }
+              .score-description { font-size: 16px; color: ${scoreColor}; margin: 5px 0; }
+              .score-badge { display: inline-block; width: 30px; height: 30px; line-height: 30px; text-align: center; border-radius: 50%; background-color: ${scoreColor}; color: white; font-size: 16px; font-weight: bold; margin-right: 10px; }
+              .section { background-color: var(--section-bg); padding: 15px; margin: 15px 0; border-radius: 8px; }
+              .url { font-size: 12px; color: var(--subtitle-color); text-align: center; margin-bottom: 20px; word-break: break-all; }
+              .date { text-align: center; font-size: 12px; color: var(--subtitle-color); margin-top: 10px; }
+              .footer { text-align: center; margin-top: 30px; color: var(--subtitle-color); font-size: 12px; }
+              .sources { list-style-type: none; padding-left: 20px; }
+              .sources li { margin-bottom: 8px; position: relative; }
+              .sources li:before { content: '•'; position: absolute; left: -15px; color: var(--title-color); }
+              a { color: var(--title-color); text-decoration: none; }
+              a:hover { text-decoration: underline; }
+              
+              /* Pinocchio Nose Styling */
+              .pinocchio-container {
+                position: relative;
+                width: 100%;
+                height: 180px;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                margin: 15px 0;
+                overflow: visible;
+                padding-left: 10px;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+              }
+              .pinocchio-face {
+                height: 150px;
+                width: auto;
+                position: relative;
+                z-index: 2;
+                margin-left: 30px;
+              }
+              .pinocchio-nose {
+                position: absolute;
+                left: 110px;
+                top: 61%;
+                transform: translateY(-50%);
+                height: var(--nose-height);
+                background-color: var(--nose-color);
+                border-radius: 0 var(--nose-border-radius) var(--nose-border-radius) 0;
+                z-index: 1;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                width: ${noseLength}px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Pinocchio Report</h1>
+              <p class="subtitle">Fact-Check Analysis</p>
+              <p class="url">URL: ${currentUrl}</p>
+              
+              <div class="score-container">
+                <h2>Misinformation Score</h2>
+                
+                <!-- Pinocchio with nose -->
+                <div class="pinocchio-container">
+                  <img src="${pinocchioBase64}" alt="Pinocchio" class="pinocchio-face">
+                  <div class="pinocchio-nose"></div>
+                </div>
+                
+                <div class="score-badge">${scoreIcon}</div>
+                <div class="score-value">${score}/10</div>
+                <div class="score-description">${scoreDescription}</div>
+              </div>
+              
+              <div class="section">
+                <h2>Summary</h2>
+                <p>${summary}</p>
+              </div>
+              
+              <div class="section">
+                <h2>Truth Report</h2>
+                <p>${report}</p>
+              </div>
+              
+              <div class="section">
+                <h2>More Context</h2>
+                <p>${additionalContext}</p>
+              </div>
+              
+              <div class="section">
+                <h2>Sources Checked</h2>
+                <ul class="sources">
+                  ${generateSourcesList()}
+                </ul>
+              </div>
+              
+              <p class="date">Generated: ${new Date().toLocaleString()}</p>
+              <div class="footer">✨ Generated by Pinocchio - The Wooden Truth Detective ✨</div>
+            </div>
+          </body>
+          </html>
+        `;
         
         // Create a download link and trigger it
         const blob = new Blob([reportHtml], { type: 'text/html' });
@@ -584,145 +643,4 @@ document.addEventListener('DOMContentLoaded', function() {
         return '<li>Error loading sources</li>';
       }
     }
-    
-    // Initialize the source viewer functionality
-    function initSourceViewer() {
-        console.log("Initializing source viewer...");
-        
-        const sourceViewerBtn = document.getElementById('source-viewer-btn');
-        const sourceModal = document.getElementById('source-modal');
-        const closeModalBtn = document.getElementById('close-modal');
-        const sourceTextElement = document.getElementById('source-text');
-        
-        if (!sourceViewerBtn || !sourceModal || !closeModalBtn || !sourceTextElement) {
-            console.error("Source viewer elements not found:", {
-                button: !!sourceViewerBtn, 
-                modal: !!sourceModal, 
-                closeBtn: !!closeModalBtn, 
-                textEl: !!sourceTextElement
-            });
-            return;
-        }
-        
-        // Make button more visible during development
-        sourceViewerBtn.style.opacity = "0.7"; 
-        sourceViewerBtn.textContent = "View Source";
-        sourceViewerBtn.style.padding = "5px";
-        sourceViewerBtn.style.backgroundColor = "#f0f0f0";
-        sourceViewerBtn.style.border = "1px solid #ccc";
-        
-        // Show modal when button is clicked
-        sourceViewerBtn.addEventListener('click', () => {
-            console.log("Source viewer button clicked");
-            console.log("Current source text length:", sourceText ? sourceText.length : 0);
-            
-            sourceTextElement.textContent = sourceText || "No source text available.";
-            sourceModal.style.display = 'block';
-        });
-        
-        // Hide modal when close button is clicked
-        closeModalBtn.addEventListener('click', () => {
-            console.log("Close modal button clicked");
-            sourceModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside the content
-        sourceModal.addEventListener('click', (event) => {
-            if (event.target === sourceModal) {
-                sourceModal.style.display = 'none';
-            }
-        });
-        
-        console.log("Source viewer initialized successfully");
-    }
-    
-    // Initialize source viewer as soon as DOM is loaded
-    initSourceViewer();
-    
-    // Listener for messages from background scripts and content scripts
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        console.log("Message received in popup.js:", message.action);
-        
-        if (message.action === 'processContent' && message.source === 'youtube') {
-            console.log("Processing YouTube content");
-            // Store the YouTube transcript as source text
-            storeSourceText(message.content, "youtube transcript");
-        }
-    });
-    
-    // Store the source text whenever content is sent for processing
-    function storeSourceText(text) {
-        sourceText = text;
-    }
-    
-    initSourceViewer();
-    
-    // Modify existing submit handler or text processing function
-    // to store the text before sending it to the backend
-    
-    // Example: If there's a submit button or form submission
-    const form = document.querySelector('form'); // Adjust selector as needed
-    if (form) {
-        const originalSubmit = form.onsubmit;
-        form.onsubmit = function(e) {
-            // Get the input text (adjust selectors based on your actual form)
-            const inputText = document.querySelector('textarea').value || 
-                              document.querySelector('input[type="text"]').value || 
-                              '';
-            
-            // Store the text before processing
-            storeSourceText(inputText);
-            
-            // Call the original submit handler
-            if (originalSubmit) {
-                return originalSubmit.call(this, e);
-            }
-        };
-    }
-    
-    // If you're using buttons instead of form submit, find and modify those handlers
-    const processButtons = document.querySelectorAll('.process-button'); // Adjust selector
-    processButtons.forEach(button => {
-        const originalClick = button.onclick;
-        button.onclick = function(e) {
-            // Capture input text
-            const inputText = document.querySelector('textarea').value || 
-                              document.querySelector('input[type="text"]').value || 
-                              '';
-            
-            // Store the text
-            storeSourceText(inputText);
-            
-            // Call original click handler
-            if (originalClick) {
-                return originalClick.call(this, e);
-            }
-        };
-    });
-    
-    // For handling file uploads, add this to your file reader callback
-    function handleFileUpload(file) {
-        // ...existing code...
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const fileContent = e.target.result;
-            
-            // Store the file content as source text
-            storeSourceText(fileContent);
-            
-            // Continue with existing processing
-            // ...existing code...
-        };
-        
-        reader.readAsText(file);
-    }
-    
-    // Add a listener for YouTube transcript processing
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === 'processContent' && message.source === 'youtube') {
-            // Store the YouTube transcript as source text
-            storeSourceText(message.content);
-        }
-    });
   });

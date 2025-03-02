@@ -146,7 +146,7 @@ Pinocchio/
 - Adrian Maier
 - Dimeji Aiyesan
 - Ashton Grant
-- Hariz Shirazi
+- [Hariz Shirazi](https://github.com/BomberFish)
 
 ## License
 

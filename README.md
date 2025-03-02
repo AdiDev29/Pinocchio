@@ -31,7 +31,7 @@ Pinocchio is a powerful browser extension that helps users navigate the complex 
 
 ### Chrome Extension
 
-1. Download the extension ZIP file from our [website](http://172.105.18.148:8080/static/files/extension.zip)
+1. Download the extension ZIP file from our [website](http://172.105.18.148:8080/)
 2. Unzip/extract the downloaded file to a location on your computer
 3. Open Chrome and navigate to `chrome://extensions/`
 4. Enable "Developer Mode" in the top-right corner

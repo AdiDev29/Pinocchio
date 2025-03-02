@@ -146,6 +146,7 @@ Pinocchio/
 - Adrian Maier
 - Dimeji Aiyesan
 - Ashton Grant
+- Hariz Shirazi
 
 ## License
 

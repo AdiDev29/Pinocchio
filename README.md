@@ -1,4 +1,4 @@
-# Pinocchio - The Wooden Truth Det ective
+# Pinocchio - The Wooden Truth Detective
 
 <p align="center">
   <img src="extension/images/icon128.png" alt="Pinocchio Logo" width="128" height="128">

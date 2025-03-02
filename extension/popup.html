@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -9,28 +9,71 @@
   <!-- Include both jsPDF and html2canvas locally instead of CDN -->
   <script src="libs/jspdf.min.js"></script>
   <script src="libs/html2canvas.min.js"></script>
+  <style>
+    /* Source Viewer Button and Modal Styles */
+    #source-viewer-btn {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: transparent;
+      border: none;
+      color: #999;
+      font-size: 10px;
+      opacity: 0.5;
+      cursor: pointer;
+      z-index: 10;
+    }
+    
+    #source-viewer-btn:hover {
+      opacity: 1;
+    }
+    
+    #source-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 100;
+    }
+    
+    #source-content {
+      position: relative;
+      width: 90%;
+      height: 90%;
+      margin: 5% auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      overflow: auto;
+    }
+    
+    #close-modal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    
+    #source-text {
+      width: 100%;
+      height: calc(100% - 40px);
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
 </head>
 <body>
-  <!-- Theme Toggle Button -->
-  <div class="theme-toggle">
-    <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle dark mode">
-      <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
-        <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M4 12H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M22 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M19.78 4.22L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M6.34 17.66L4.22 19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M19.78 19.78L17.66 17.66" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M6.34 6.34L4.22 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-  </div>
-
+  <!-- No changes needed in the HTML structure as the API URLs are set in JavaScript -->
   <div class="container">
     <header>
       <h1>Pinocchio</h1>
@@ -103,32 +146,18 @@
     </footer>
   </div>
 
+  <!-- Source viewer button -->
+  <button id="source-viewer-btn" title="View source text">〈〉</button>
+  
+  <!-- Source modal -->
+  <div id="source-modal">
+    <div id="source-content">
+      <button id="close-modal">×</button>
+      <h3>Source Text</h3>
+      <pre id="source-text"></pre>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
-  <script>
-    // Theme switching functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      const themeToggleBtn = document.getElementById('theme-toggle-btn');
-      
-      // Check for saved theme preference or use system preference
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      
-      // Set initial theme
-      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
-      
-      // Toggle theme when button is clicked
-      themeToggleBtn.addEventListener('click', function() {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-      });
-    });
-  </script>
 </body>
 </html>

@@ -744,7 +744,7 @@ body[data-theme="dark"] .graph-select {
 }
 
 .legend-color.root {
-    background-color: var(--primary-color);
+    background-color: #5f5cee
 }
 
 .legend-color.source {
@@ -752,7 +752,7 @@ body[data-theme="dark"] .graph-select {
 }
 
 .legend-color.supporting {
-    background-color: var(--true-color);
+    background-color: #15a721;
 }
 
 .legend-color.contradicting {

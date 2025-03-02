@@ -548,30 +548,31 @@ footer p {
   transition: all 0.3s ease;
 }
 
-/* Add to your existing styles */
-.web-ui-link {
-  margin-top: 15px;
+/* Chat button styling to match retry and share buttons */
+.chat-button {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-family: 'Nunito', sans-serif;
+  margin-top: 8px;
+  min-width: 130px;
   text-align: center;
 }
 
-.web-ui-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background-color: #4a90e2;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.web-ui-button:hover {
+.chat-button:hover {
   background-color: #357abd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.web-ui-button .arrow {
-  font-size: 18px;
-  line-height: 1;
+.chat-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }

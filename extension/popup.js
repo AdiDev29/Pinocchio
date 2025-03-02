@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
       currentTitle = tab.title || 'Unknown Page';
       
       // Check if this is a YouTube video
-      isYoutubeVideo = currentUrl.includes('youtube.com/watch') || currentUrl.includes('youtu.be/');
+      isYoutubeVideo = currentUrl !== undefined && (currentUrl.includes('youtube.com/watch') || currentUrl.includes('youtu.be/'));
       
       // Format and display the title (truncate if too long)
       const maxTitleLength = 40;
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
       websiteTitleElement.title = currentTitle; // Full title on hover
       
       // Format and set the URL
-      currentUrlElement.textContent = formatUrl(currentUrl);
+    //   currentUrlElement.textContent = formatUrl(currentUrl);
       currentUrlElement.href = currentUrl;
       currentUrlElement.title = currentUrl; // Full URL on hover
 
@@ -787,6 +787,8 @@ document.addEventListener('DOMContentLoaded', function() {
           <html data-theme="${currentTheme}">
           <head>
             <meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<meta name="darkreader-lock">
             <title>Pinocchio Report - ${currentTitle}</title>
             <style>
               @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap');

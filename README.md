@@ -1,7 +1,7 @@
 # Pinocchio - The Wooden Truth Detective
 
 <p align="center">
-  <img src="backend/static/images/pinocchiofilm.jpg" alt="Pinocchio Logo" width="128" height="128">
+  <img src="backend/static/images/favicon.ico" alt="Pinocchio Logo" width="128" height="128">
 </p>
 
 <p align="center">

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pinocchio</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="scripts.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="pinocchio.png" alt="Pinocchio Logo" class="logo-icon">
+        <h1>Pinocchio</h1>
+      </div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active" data-tab="fact-check">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+          </svg>
+          Fact Check
+        </a>
+        <a href="#" class="nav-item" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path>
+          </svg>
+          Dashboard
+        </a>
+        <a href="#" class="nav-item" data-tab="graph-view">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path d="M17 12c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zM7 12c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zM12 2C9.24 2 7 4.24 7 7s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM12 10c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"></path>
+          </svg>
+          Graph View
+        </a>
+      </nav>
+      <div class="user-section">
+        <div class="user-info">
+          <div class="user-avatar">U</div>
+          <div class="user-name">User</div>
+        </div>
+      </div>
+    </aside>
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="tab-title">Fact Check</div>
+        <div class="theme-toggle">
+          <span class="theme-icon">🌞</span>
+          <label class="switch">
+            <input type="checkbox" id="theme-switch">
+            <span class="slider round"></span>
+          </label>
+          <span class="theme-icon">🌙</span>
+        </div>
+      </header>
+      
+      <div class="content-area">
+        <!-- Fact Check Tab -->
+        <div class="tab-content active" id="fact-check">
+          <div class="input-section">
+            <div class="input-tabs">
+              <button class="input-tab-btn active" data-input="url">
+                <svg viewBox="0 0 24 24" class="input-icon">
+                  <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+                </svg>
+                URL
+              </button>
+              <button class="input-tab-btn" data-input="text">
+                <svg viewBox="0 0 24 24" class="input-icon">
+                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"></path>
+                </svg>
+                Text
+              </button>
+            </div>
+            <div class="input-container">
+              <input type="text" id="url-input" class="fact-check-input" placeholder="Enter a URL to fact check (e.g., https://example.com/article)">
+              <textarea id="text-input" class="fact-check-input hidden" placeholder="Enter text to fact check"></textarea>
+            </div>
+            <button id="fact-check-btn" class="primary-btn">Fact Check Now</button>
+          </div>
+          
+          <div class="supported-sources">
+            <h3>Supported Sources</h3>
+            <div class="source-list">
+              <div class="source-item">
+                <div class="source-icon news-icon"></div>
+                News Articles
+              </div>
+              <div class="source-item">
+                <div class="source-icon social-icon"></div>
+                Social Media Posts
+              </div>
+              <div class="source-item">
+                <div class="source-icon video-icon"></div>
+                Video Content
+              </div>
+              <div class="source-item">
+                <div class="source-icon blog-icon"></div>
+                Blog Posts
+              </div>
+            </div>
+          </div>
+          
+          <div id="results-container" class="results-container hidden">
+            <div class="results-header">
+              <h2>Fact Check Results</h2>
+              <div class="accuracy-meter">
+                <div class="accuracy-label">Accuracy Score:</div>
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width: 75%;"></div>
+                </div>
+                <div class="accuracy-value">75%</div>
+              </div>
+            </div>
+            
+            <div class="results-content">
+              <div class="claim-section">
+                <h3>Claim</h3>
+                <p class="claim-text">The claim text will appear here after analysis.</p>
+              </div>
+              
+              <div class="verdict-section">
+                <h3>Verdict</h3>
+                <div class="verdict-badge partly-true">Partly True</div>
+                <p class="verdict-explanation">The explanation of the verdict will appear here after analysis.</p>
+              </div>
+              
+              <div class="sources-section">
+                <h3>Sources</h3>
+                <ul class="source-list-detailed">
+                  <li class="source-item-detailed">
+                    <div class="source-name">CNN</div>
+                    <div class="source-url">https://cnn.com/article123</div>
+                    <div class="source-relevance">High Relevance</div>
+                  </li>
+                  <li class="source-item-detailed">
+                    <div class="source-name">BBC</div>
+                    <div class="source-url">https://bbc.com/news/article456</div>
+                    <div class="source-relevance">Medium Relevance</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div class="tab-content" id="dashboard">
+          <div class="dashboard-header">
+            <h2>Your Fact Check History</h2>
+            <div class="dashboard-filters">
+              <select class="filter-select">
+                <option value="all">All Checks</option>
+                <option value="true">True</option>
+                <option value="partly-true">Partly True</option>
+                <option value="false">False</option>
+              </select>
+              <input type="date" class="date-filter">
+            </div>
+          </div>
+          
+          <div class="dashboard-grid">
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="verdict-badge true">True</div>
+                <div class="check-date">March 1, 2025</div>
+              </div>
+              <div class="card-content">
+                <h3 class="card-title">Global Temperature Rise Statistics</h3>
+                <p class="card-description">Fact check on climate change statistics from NASA's website.</p>
+              </div>
+              <div class="card-footer">
+                <button class="view-details-btn">View Details</button>
+                <button class="view-graph-btn">View Graph</button>
+              </div>
+            </div>
+            
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="verdict-badge false">False</div>
+                <div class="check-date">February 28, 2025</div>
+              </div>
+              <div class="card-content">
+                <h3 class="card-title">Vaccine Effectiveness Claims</h3>
+                <p class="card-description">Fact check on social media claims about vaccine effectiveness.</p>
+              </div>
+              <div class="card-footer">
+                <button class="view-details-btn">View Details</button>
+                <button class="view-graph-btn">View Graph</button>
+              </div>
+            </div>
+            
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="verdict-badge partly-true">Partly True</div>
+                <div class="check-date">February 25, 2025</div>
+              </div>
+              <div class="card-content">
+                <h3 class="card-title">Economic Growth Report</h3>
+                <p class="card-description">Fact check on government economic growth statistics.</p>
+              </div>
+              <div class="card-footer">
+                <button class="view-details-btn">View Details</button>
+                <button class="view-graph-btn">View Graph</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Graph View Tab -->
+        <div class="tab-content" id="graph-view">
+          <div class="graph-controls">
+            <select id="graph-select" class="graph-select">
+              <option value="">Select a fact check to view</option>
+              <option value="check1">Global Temperature Rise Statistics</option>
+              <option value="check2">Vaccine Effectiveness Claims</option>
+              <option value="check3">Economic Growth Report</option>
+            </select>
+            <div class="zoom-controls">
+              <button id="zoom-in" class="zoom-btn">+</button>
+              <button id="zoom-out" class="zoom-btn">-</button>
+              <button id="reset-zoom" class="zoom-btn"></button>
+            </div>
+          </div>
+          
+          <div class="graph-container">
+            <svg id="graph-svg" width="100%" height="600"></svg>
+          </div>
+          
+          <div class="graph-legend">
+            <div class="legend-item">
+              <div class="legend-color root"></div>
+              <div class="legend-label">Root (Input URL/Text)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color source"></div>
+              <div class="legend-label">Source</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color supporting"></div>
+              <div class="legend-label">Supporting Evidence</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color contradicting"></div>
+              <div class="legend-label">Contradicting Evidence</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

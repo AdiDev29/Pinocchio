@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentUrl = '';
     let currentTitle = '';
+    let currentAnalysisData = null;
+    let sourceText = '';
+    let isYoutubeVideo = false;
     
     // Theme functions
     function initTheme() {
@@ -94,6 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
+    // Initialize file upload and source viewer
+    initSourceViewer();
+    
     // Start the analysis process
     init();
     
@@ -136,6 +142,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Update URL and title information
       currentUrl = tab.url;
       currentTitle = tab.title || 'Unknown Page';
+      
+      // Check if this is a YouTube video
+      isYoutubeVideo = currentUrl.includes('youtube.com/watch') || currentUrl.includes('youtu.be/');
       
       // Format and display the title (truncate if too long)
       const maxTitleLength = 40;
@@ -183,6 +192,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function performAnalysis(tab, forceRefresh) {
       console.log("Performing analysis for:", tab.url);
       
+      // Check if this is a YouTube video
+      const isYoutube = tab.url.includes('youtube.com/watch') || tab.url.includes('youtu.be/');
+      
       // If we're forcing a refresh, clear any existing cached data
       if (forceRefresh) {
         try {
@@ -197,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Execute script to get content of current page
       chrome.scripting.executeScript({
         target: {tabId: tab.id},
-        function: getPageContent
+        function: isYoutube ? getYouTubeContent : getPageContent
       }, function(results) {
         if (chrome.runtime.lastError) {
           showError('Error accessing page content: ' + chrome.runtime.lastError.message);
@@ -211,6 +223,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const content = results[0].result;
         
+        // Store source text for later use
+        storeSourceText(content);
+        
         // Send the content to our backend server
         fetch('http://172.105.18.148:8080/api/analyze', {
           method: 'POST',
@@ -220,7 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
           body: JSON.stringify({
             url: tab.url,
             title: tab.title,
-            content: content
+            content: content,
+            type: isYoutube ? 'youtube' : 'webpage'
           })
         })
         .then(response => {
@@ -231,9 +247,9 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
           console.log("Analysis complete, results:", data);
-		  
-			// Store the analysis data for potential later use
-			currentAnalysisData = data;
+          
+          // Store the analysis data for potential later use
+          currentAnalysisData = data;
 
           // Only store in cache if we have valid data
           if (data && !data.error) {
@@ -401,6 +417,312 @@ document.addEventListener('DOMContentLoaded', function() {
     function getPageContent() {
       // Get all text content from the page
       return document.body.innerText;
+    }
+    
+    function getYouTubeContent() {
+      // This function extracts content from YouTube videos
+      let content = "";
+      
+      // Try to get video title
+      const title = document.querySelector('h1.title.style-scope.ytd-video-primary-info-renderer')?.textContent || 
+                    document.querySelector('h1.watch-title-container')?.textContent || 
+                    "";
+      content += "Title: " + title + "\n\n";
+      
+      // Try to get video description
+      const description = document.querySelector('#description-text')?.textContent || 
+                         document.querySelector('#description')?.textContent || 
+                         "";
+      content += "Description: " + description + "\n\n";
+      
+      // Try to get channel name
+      const channel = document.querySelector('#channel-name')?.textContent || 
+                     document.querySelector('#owner-name')?.textContent || 
+                     "";
+      content += "Channel: " + channel + "\n\n";
+      
+      // Try to get transcript if available
+      const transcriptText = Array.from(document.querySelectorAll('div.cue-group'))
+        .map(group => {
+          const textElem = group.querySelector('.cue-text');
+          return textElem ? textElem.textContent : "";
+        })
+        .join(' ');
+      
+      if (transcriptText) {
+        content += "Transcript: " + transcriptText + "\n\n";
+      }
+      
+      // Get comments if available (limited to visible ones)
+      const comments = Array.from(document.querySelectorAll('#content-text'))
+        .map(comment => comment.textContent)
+        .join('\n\n');
+      
+      if (comments) {
+        content += "Comments: " + comments + "\n\n";
+      }
+      
+      return content || document.body.innerText; // Fall back to body text if nothing specific was found
+    }
+    
+    function storeSourceText(text) {
+      // Store the source text for potential later use
+      sourceText = text;
+      
+      // If we have a source viewer element, update it
+      const sourceViewer = document.getElementById('source-text-viewer');
+      if (sourceViewer) {
+        sourceViewer.textContent = text.substring(0, 1000) + (text.length > 1000 ? "..." : "");
+      }
+    }
+    
+    function initSourceViewer() {
+      // Add source viewer tab and file upload functionality
+      const tabs = document.querySelector('.tab-container');
+      const content = document.querySelector('.tab-content');
+      
+      // Skip if elements don't exist in this version
+      if (!tabs || !content) return;
+      
+      // Create source tab if it doesn't exist
+      if (!document.getElementById('source-tab')) {
+        const sourceTab = document.createElement('div');
+        sourceTab.id = 'source-tab';
+        sourceTab.className = 'tab';
+        sourceTab.textContent = 'Source';
+        tabs.appendChild(sourceTab);
+        
+        // Create source content container
+        const sourceContent = document.createElement('div');
+        sourceContent.id = 'source-content';
+        sourceContent.className = 'content-section';
+        sourceContent.style.display = 'none';
+        
+        // Add file upload area
+        const uploadArea = document.createElement('div');
+        uploadArea.className = 'upload-area';
+        uploadArea.innerHTML = `
+          <p>Analyze text or a URL directly:</p>
+          <textarea id="source-input" placeholder="Paste URL, YouTube link, or text to analyze"></textarea>
+          <button id="analyze-source-btn" class="analyze-btn">Analyze</button>
+          <div id="source-text-viewer" class="source-viewer"></div>
+        `;
+        sourceContent.appendChild(uploadArea);
+        content.appendChild(sourceContent);
+        
+        // Add event listeners for the new tab
+        sourceTab.addEventListener('click', function() {
+          // Hide all content sections
+          document.querySelectorAll('.content-section').forEach(section => {
+            section.style.display = 'none';
+          });
+          
+          // Show source content
+          sourceContent.style.display = 'block';
+          
+          // Mark this tab as active
+          document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+          });
+          sourceTab.classList.add('active');
+        });
+        
+        // Add event listener for the analyze button
+        document.getElementById('analyze-source-btn').addEventListener('click', function() {
+          handleSourceAnalysis();
+        });
+      }
+    }
+    
+    function handleSourceAnalysis() {
+      const sourceInput = document.getElementById('source-input');
+      if (!sourceInput || !sourceInput.value.trim()) {
+        alert('Please enter a URL or text to analyze.');
+        return;
+      }
+      
+      const input = sourceInput.value.trim();
+      
+      // Show loading
+      resultsDiv.style.display = 'none';
+      errorDiv.style.display = 'none';
+      loadingDiv.style.display = 'flex';
+      
+      // Check if input is a URL
+      let isUrl = false;
+      try {
+        new URL(input);
+        isUrl = true;
+      } catch (e) {
+        // Not a URL, will be treated as text
+      }
+      
+      if (isUrl) {
+        // If it's a URL, check if it's YouTube
+        const isYoutube = input.includes('youtube.com/watch') || input.includes('youtu.be/');
+        
+        // For URLs, we could either open them in a new tab or fetch them directly
+        if (isYoutube) {
+          // For YouTube, we might want special handling
+          analyzeDirectInput(input, 'youtube');
+        } else {
+          // For other URLs
+          analyzeDirectInput(input, 'webpage');
+        }
+      } else {
+        // It's plain text
+        storeSourceText(input);
+        analyzeDirectInput(input, 'text');
+      }
+    }
+    
+    function analyzeDirectInput(input, type) {
+      // Analyze text or URL directly without opening a tab
+      fetch('http://172.105.18.148:8080/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: input,
+          type: type,
+          url: type === 'text' ? null : input,
+          title: 'User submitted content'
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("Direct analysis complete, results:", data);
+        
+        // Store the analysis data
+        currentAnalysisData = data;
+        
+        // Display results
+        displayResults(data);
+      })
+      .catch(error => {
+        console.error("Direct analysis error:", error);
+        showError('Error analyzing content: ' + error.message);
+      });
+    }
+    
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // Show loading state
+      resultsDiv.style.display = 'none';
+      errorDiv.style.display = 'none';
+      loadingDiv.style.display = 'flex';
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const content = e.target.result;
+        storeSourceText(content);
+        
+        // Send for analysis
+        fetch('http://172.105.18.148:8080/api/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content: content,
+            type: 'file',
+            title: file.name,
+            filename: file.name
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("File analysis complete, results:", data);
+          
+          // Store the analysis data
+          currentAnalysisData = data;
+          
+          // Display results
+          displayResults(data);
+        })
+        .catch(error => {
+          console.error("File analysis error:", error);
+          showError('Error analyzing file: ' + error.message);
+        });
+      };
+      
+      reader.onerror = function() {
+        showError('Error reading file');
+      };
+      
+      // Read the file as text
+      reader.readAsText(file);
+    }
+    
+    function generateAndSendReport() {
+      // This function sends the current analysis to predetermined recipients
+      if (!currentAnalysisData) {
+        alert('Please complete an analysis before generating a report.');
+        return;
+      }
+      
+      // Show a loading indicator
+      const shareButton = document.getElementById('share-button');
+      if (shareButton) {
+        const originalText = shareButton.textContent;
+        shareButton.textContent = 'Sending...';
+        shareButton.disabled = true;
+        
+        // Prepare report data
+        const reportData = {
+          url: currentUrl,
+          title: currentTitle,
+          analysis: currentAnalysisData,
+          generated: new Date().toISOString(),
+          isYoutubeVideo: isYoutubeVideo,
+          score: currentAnalysisData.misinformation_score || 0
+        };
+        
+        // Send to a predetermined endpoint
+        fetch('http://172.105.18.148:8080/api/report', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(reportData)
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Report sent successfully:", data);
+          alert('Report sent successfully!');
+          
+          // Reset button
+          shareButton.textContent = originalText;
+          shareButton.disabled = false;
+        })
+        .catch(error => {
+          console.error("Error sending report:", error);
+          alert('Error sending report: ' + error.message);
+          
+          // Reset button
+          shareButton.textContent = originalText;
+          shareButton.disabled = false;
+        });
+      }
     }
     
     function showError(message) {

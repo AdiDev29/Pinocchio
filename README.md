@@ -16,6 +16,9 @@
   <a href="#development">Development</a> •
   <a href="#license">License</a>
 </p>
+### Announcement March 25, 2025
+
+Pinocchio servers going offline. Your own server, api key, and build of the extension is now required to use it.
 
 ## Features
 
